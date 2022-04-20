@@ -1,0 +1,108 @@
+html{
+    font-family: 'Roboto';
+    height:100vh;
+    /* background:pink; */
+    margin:0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+body{
+    height:100%;
+    /* background:blue; */
+    margin:0;
+    box-sizing: border-box;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+main{
+    height:100%;
+    /* background:blue; */
+    margin:0;
+    box-sizing: border-box;
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+section{
+    height:70vh;
+    width:25vw;
+}
+#game{
+    height:70vh;
+    width:70vw;
+    background: url('./img/background.jpg');
+    position:relative;
+}
+
+header, footer{
+    height:5vh;
+}
+
+footer{
+    font-size:0.75rem;
+}
+
+img{
+    position:absolute;
+}
+
+div{
+    position:absolute;
+    height:30vh;
+    width:15vw;
+    /* background:red; */
+    transition: background-position 1s;
+}
+
+.taupeOne{
+    top:50%;
+    left:50%;
+}
+
+.taupeTwo{
+    top:20%;
+    left:20%;
+}
+
+.taupeOne:first-child{
+    background:url('./img/trou_arriere.png') no-repeat;
+    background-position:center;
+}
+.taupeOne:nth-child(2){
+    background:url('./img/taupe.png') no-repeat;
+    background-position:center;
+}
+.taupeOne:nth-child(3){
+    background:url('./img/trou_avant.png') no-repeat;
+    background-position:center;
+}
+
+.taupeTwo:nth-child(4){
+    background:url('./img/trou_arriere.png') no-repeat;
+    background-position:center;
+}
+
+.taupeTwo:nth-child(5){
+    background:url('./img/taupe.png') no-repeat;
+    background-position:center;
+}
+
+.taupeTwo:nth-child(6){
+    background:url('./img/trou_avant.png') no-repeat;
+    background-position:center;
+}
+
+.appear{
+    background-position:top !important;
+    
+}
+
+.dizzy{
+    /* background:center / no-repeat url('./img/taupe.png'), top / no-repeat url('./img/dizzy.gif') !important; */
+    background: url('./img/dizzy.gif') top no-repeat, url('./img/taupe_dizzy.png') top no-repeat !important;
+    background-size: 50%,auto !important;
+}
