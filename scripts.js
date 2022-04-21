@@ -41,9 +41,12 @@ function KillTheMole(element) {
   word = Myclass[0];
   //   console.log(document.querySelector('.' + word + '.taupe'))
 
-  document.querySelector('.' + word + '.taupe').classList.add('dizzy');
-  document.querySelector('.' + word + '.taupe').classList.remove('appear');
-  setTimeout(DizzyTaupe, 500);
+  let moleToKill = document.querySelector('.' + word + '.taupe.appear');
+  if (moleToKill != null) {
+    moleToKill.classList.add('dizzy');
+    document.querySelector('.' + word + '.taupe').classList.remove('appear');
+    setTimeout(DizzyTaupe, 500);
+  }
 }
 
 function StopGame() {
