@@ -1,6 +1,7 @@
 <template>
   <div id="menu">
     <h2>Chasse taupe</h2>
+    <h3>Level {{level}}</h3>
     <button id="play" v-on:click="PlayGame">PLAY</button>
     <button id="stop" v-on:click="StopGame">STOP</button>
     <button id="restart" v-on:click="RestartGame">RESTART</button>

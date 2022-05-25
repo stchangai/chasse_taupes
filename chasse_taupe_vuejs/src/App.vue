@@ -17,10 +17,14 @@ export default {
   data(){
     return{
       timer:null,
+      stopTimer: null,
       nbHoles:1,
       limitHoles:8,
       positionRandom:[],
       positions:[],
+      IsUp : false,
+      randTaupe:0,
+      taupes:[],
     }
   },
   created(){
@@ -37,13 +41,13 @@ export default {
   },
   methods:{
     myFunction: function () {
-      let taupes = document.getElementsByClassName('mole');
+      this.taupes = document.getElementsByClassName('mole');
       // console.log(taupes.length)
       var /*min = 5, max = 10,*/ alpha = 1;
       
-      var randTaupe = Math.floor(
+      this.randTaupe = Math.floor(
           Math.random() *
-          (taupes.length));  // Generate Random number between 0 et numbers of moles
+          (this.taupes.length));  // Generate Random number between 0 et numbers of moles
       // var randTime = Math.floor(
       //     Math.random() * (max - min + 1) +
       //     min);  // Generate Random number between 5 - 10
@@ -57,9 +61,41 @@ export default {
       // for (let i = 0; i < taupes.length; i++) {
       // console.log(document.querySelector(".one .taupe"))
       // console.log(document.querySelector("."+taupes[randTaupe].classList[1] +" .taupe"))
-      document.querySelector("."+taupes[randTaupe].classList[0]+"."+taupes[randTaupe].classList[1] +" .taupe").classList.toggle('appear');
+      document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .taupe").classList.add('appear');
       // };
-      this.timer = setTimeout(this.myFunction, randTime * 1000);
+      // let up = 0.5;
+      // if(!this.IsUp){
+      //   up = 1;
+      // }
+      this.timer = setTimeout(this.myFunctionRemove, randTime * 2000);
+      // this.stopTimer = setTimeout(this.StopMole, 5000)
+    },
+    myFunctionRemove: function () {
+      // this.taupes = document.getElementsByClassName('mole');
+      // console.log(taupes.length)
+      var /*min = 5, max = 10,*/ alpha = 0.5;
+      
+      // this.randTaupe = Math.floor(
+      //     Math.random() *
+      //     (this.taupes.length));  // Generate Random number between 0 et numbers of moles
+      // var randTime = Math.floor(
+      //     Math.random() * (max - min + 1) +
+      //     min);  // Generate Random number between 5 - 10
+        
+      var randTime = Math.floor(
+          -alpha * Math.log(1-Math.random())); 
+      // console.log(
+      //     'Wait for ' + randTime + ' seconds and the mole selected is at index
+      //     ' + randTaupe);
+
+      // for (let i = 0; i < taupes.length; i++) {
+      // console.log(document.querySelector(".one .taupe"))
+      // console.log(document.querySelector("."+taupes[randTaupe].classList[1] +" .taupe"))
+      document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .taupe").classList.remove('appear');
+      // };
+    
+      this.stopTimer = setTimeout(this.myFunction, randTime * 4000);
+      // this.stopTimer = setTimeout(this.StopMole, 5000)
     },
   //   KillTheMole : function(element) {
   //   //   console.log(element)
@@ -75,6 +111,10 @@ export default {
   //     setTimeout(DizzyTaupe, 500);
   //   }
   // },
+    StopMole: function(){
+      console.log("wait for 5 secondes");
+      
+    },
     PlayGame: function(){
       console.log("Play from App.vue")
       this.myFunction()
@@ -82,6 +122,7 @@ export default {
     StopGame : function() {
       console.log("Enter in StopGame from App.vue")
       clearTimeout(this.timer)
+      clearTimeout(this.stopTimer)
     },
     RestartGame: function() {
       console.log("Enter in RestartGame from App.vue")
