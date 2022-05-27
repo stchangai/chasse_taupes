@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <Menu :level="level" :nbHoles="nbHoles" :taupesKilled="taupesKilledCount" :stop="false" :restart="false" :state="level<=5"  v-on:PlayGame="PlayGame"  v-on:StopGame="StopGame" v-on:RestartGame="RestartGame" v-on:AddMole="AddMole" />
-    <GameBoard :level="level" :nbHoles="nbHoles" :position="positionRandom" @created="myFunction" v-on:TaupeJustKilled="RegisterTaupeJustKilled"/>
+    <GameBoard :level="level" :nbHoles="nbHoles" :position="positionRandom" v-on:TaupeJustKilled="RegisterTaupeJustKilled"/>
   </div>
 </template>
 
@@ -18,7 +18,7 @@ export default {
     level:function(newLevel){
       if(newLevel == 2){
         this.difficultyTaupeCasque = this.GetFromUserLevelDifficulty()
-        
+        this.probaPile-=0.1
       }
       console.log("newLevel", newLevel)
       this.probaPile-=0.2
@@ -239,7 +239,7 @@ export default {
       }
     },
     ReachNumberOfTaupe:function(level, taupesKilled){
-      if(taupesKilled >= this.objectivesByLevels[level]){
+      if(taupesKilled >= this.objectivesByLevels[level-1]){
         alert("Bravo, tu as completé le niveau avec succès. On passe au suivant maintenant !")
         this.level++
         this.taupesKilledCount=0
