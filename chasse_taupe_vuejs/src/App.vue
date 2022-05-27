@@ -39,14 +39,12 @@ export default {
       numHoleArray:["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"],
       objectivesByLevels:[20,30,40,50,60,75,70,75],
       timer:null,
-      stopTimer: null,
       timerEmptyArray:null,
       nbHoles:4,
       limitHoles:8,
       positionRandom:[],
       positionsAlreadlyTaken:[],
       positions:[],
-      IsUp : false,
       randTaupe:0,
       taupes:[],
       level:1,
@@ -71,9 +69,6 @@ export default {
       this.PutMolesInBeginning();
     }
      
-  },
-  mounted(){
-    //this.RandomPosition();
   },
   methods:{
     MoleAppearition:function(){
@@ -138,63 +133,8 @@ export default {
         this.timerEmptyArray = setTimeout(this.EmptyTaupeJustKilled, 3000)
       }
     },
-    myFunction: function () {
-      //récupère toutes les taupes placées sur le terrain
-      this.taupes = document.getElementsByClassName('mole');
-
-      let alpha = 1;
-      
-      this.randTaupe = Math.floor(
-          Math.random() *
-          (this.taupes.length));  // Generate Random number between 0 et numbers of moles
-        
-      // utilise la loi Exponentielle pour déterminer le temps d'apparition des taupes
-      var randTime = Math.floor(
-          -alpha * Math.log(1-Math.random())); 
-
-      // console.log(document.querySelector(".one .taupe"))
-      // console.log(document.querySelector("."+taupes[randTaupe].classList[1] +" .taupe"))
-      let HasCasque = this.IsThisMoleHasCasque(this.difficultyTaupeCasque)
-      if(HasCasque){
-        document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .casque").classList.add('appear');
-      }
-      // fait apparaître la taupe avec la classe appear
-      document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .taupe").classList.add('appear');
-      this.timer = setTimeout(this.myFunctionRemove, randTime * 2000);
-      
-    },
-    myFunctionRemove: function () {
-
-      let alpha = 0.8;        
-      var randTime = Math.floor(
-          -alpha * Math.log(1-Math.random())); 
- 
-      document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .taupe").classList.remove('appear');
-      document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .casque").classList.remove('appear');
-    
-      this.stopTimer = setTimeout(this.myFunction, randTime * 4000);
-    },
-  //   KillTheMole : function(element) {
-  //   //   console.log(element)
-  //   //   console.log('you killed the mole ' + element.className);
-  //   const Myclass = element.className.split(' ');
-  //   word = Myclass[0];
-  //   //   console.log(document.querySelector('.' + word + '.taupe'))
-
-  //   let moleToKill = document.querySelector('.' + word + '.taupe.appear');
-  //   if (moleToKill != null) {
-  //     moleToKill.classList.add('dizzy');
-  //     document.querySelector('.' + word + '.taupe').classList.remove('appear');
-  //     setTimeout(DizzyTaupe, 500);
-  //   }
-  // },
-    StopMole: function(){
-      console.log("wait for 5 secondes");
-      
-    },
     PlayGame: function(){
       console.log("Play from App.vue")
-      // this.myFunction()
       this.MoleAppearition()
       this.EmptyTaupeJustKilled()
     },
@@ -202,21 +142,12 @@ export default {
       console.log("Enter in StopGame from App.vue")
       clearTimeout(this.timer)
       clearTimeout(this.timerEmptyArray)
-      // clearTimeout(this.stopTimer)
     },
     RestartGame: function() {
-      // console.log("Enter in RestartGame from App.vue")
-      // this.myFunction();
-      //this.nbHoles = 1;
       if(this.level <=5){this.level++}
     },
     AddMole : function(){
       console.log("Enter in AddMole from App.vue");
-      // if(this.nbHoles < this.limitHoles){
-      //   this.nbHoles++;
-      //   this.GetRandomPosition();
-      //   console.log("nbHoles : "+ this.nbHoles);
-      // }
       this.SetTerrain(true)
     },
     PutMolesInBeginning: function(){
@@ -242,16 +173,7 @@ export default {
           while(sum < random){ //while(sum < random && random < tab_proba[i]){
             i++
             sum += tab_proba[i]
-          }
-        // console.log("sum of ligne", sum)
-        // console.log("i", i)
-          // for(let i=0; i< 4;i++){
-          //   if(sum > random && random > tab_proba[i]){
-          //     console.log("x",i)
-          //     x=i
-          //   }
-          // }
-          
+          }          
           j=i;
           sum = tab_proba[j]
           random = Math.random();
@@ -260,49 +182,13 @@ export default {
             j+=4
             sum+=tab_proba[j]
           }
-          
+          // on vérifie que la position n'a pas déjà été attribuée à un trou précédent
           found = this.positionsAlreadlyTaken.find(element => element==this.positions[j])
           if(found == undefined){console.log("c'est bon tu vas bientot sortir normalement")}
-          // if(found == undefined){
-          //   this.positionsAlreadlyTaken.push(this.positions[j])
-          // }
-          
-          // let probaARedistribuee = tab_proba[j]
-          //     tab_proba[j] = 0
-          //     while(probaARedistribuee >=0){
-          //       let randomPosition = Math.floor(Math.random() * tab_proba.length);
-          //       if(randomPosition != j){
-          //         tab_proba[randomPosition] += 0.1
-          //         probaARedistribuee-=0.1
-          //       }
-          //     }
       }
-      // console.log("test", test)
       this.positionRandom.push(this.positions[j])
       this.positionsAlreadlyTaken.push(this.positions[j])
-      // for(let j=i;j<tab_proba.length;j+=4){
-      //   if(sum > random && random > tab_proba[i]){
-      //     console.log("tab_roba["+j+"]", tab_proba[j])
-      //   }
-      //     // this.positionRandom.push(this.positions[i])
-      //     probaARedistribuee = this.tab_proba[i]
-      //     this.tab_proba[i] = 0
-      //     while(this.probaARedistribuee >0){
-      //       let randomPosition = Math.floor(Math.random() * this.tab_proba.length);
-      //       if(randomPosition != i){
-      //         this.tab_proba[randomPosition] += 0.1
-      //         this.probaARedistribuee-=0.1
-      //       }
-      //     }
-      // }
-        // console.log(tab_proba)
-      
-      // for(let i = 0; i < this.nbHoles;i=i+1){
-      //   let random = Math.floor(Math.random() * this.positions.length);
-      //   this.positionRandom[i] = this.positions[random]; //{"top":this.position[random],"left":position[random]};
-      //   this.positions.splice(random, 1);
-      //   console.log("nb elements positions = ", this.positions.length)
-      // }
+     
       console.log(this.positionRandom);
     },
     // 1) tirage d'une piece pile ou face de parametre de probabilité de pile =p
@@ -358,16 +244,6 @@ export default {
         this.level++
         this.taupesKilledCount=0
       }
-    },
-    GetRandomPosition : function(){
-      
-      // for(let i = 0; i < this.nbHoles;i=i+1){
-        let random = Math.floor(Math.random() * this.positions.length);
-        this.positionRandom.unshift(this.positions[random]); //{"top":this.position[random],"left":position[random]};
-        this.positions.splice(random, 1);
-        console.log("nb elements positions = ", this.positions.length)
-      // }
-      console.log(this.positionRandom);
     },
   }
 }
