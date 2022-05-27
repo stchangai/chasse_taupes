@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <Menu level="0" :nbHoles="nbHoles" :stop="false" :restart="false" :state="nbHoles<limitHoles"  v-on:PlayGame="PlayGame"  v-on:StopGame="StopGame" v-on:RestartGame="RestartGame" v-on:AddMole="AddMole" />
-    <GameBoard level="0" :nbHoles="nbHoles" :position="positionRandom" @created="myFunction"/>
+    <Menu :level="level" :nbHoles="nbHoles" :taupesKilled="taupesKilledCount" :stop="false" :restart="false" :state="level<=5"  v-on:PlayGame="PlayGame"  v-on:StopGame="StopGame" v-on:RestartGame="RestartGame" v-on:AddMole="AddMole" />
+    <GameBoard :level="level" :nbHoles="nbHoles" :position="positionRandom" @created="myFunction" v-on:TaupeJustKilled="RegisterTaupeJustKilled"/>
   </div>
 </template>
 
@@ -14,88 +14,165 @@ export default {
     GameBoard,
     Menu
   },
+  watch:{
+    level:function(newLevel){
+      if(newLevel == 2){
+        this.difficultyTaupeCasque = this.GetFromUserLevelDifficulty()
+        
+      }
+      console.log("newLevel", newLevel)
+      this.probaPile-=0.2
+      this.nbHoles = this.GetNumbersOfMolesByLevel(newLevel, this.probaPile)
+      console.log("nb de trous nouveau level", this.nbHoles)
+      this.positionRandom=[]
+      this.positionsAlreadlyTaken=[]
+      for(let i =0; i<this.nbHoles;i++){
+        this.PutMolesInBeginning();
+      }
+    },
+    taupesKilledCount:function(newTaupesKilledCount){
+      this.ReachNumberOfTaupe(this.level, newTaupesKilledCount)
+    }
+  },
   data(){
     return{
+      numHoleArray:["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"],
+      objectivesByLevels:[20,30,40,50,60,75,70,75],
       timer:null,
       stopTimer: null,
-      nbHoles:1,
+      timerEmptyArray:null,
+      nbHoles:4,
       limitHoles:8,
       positionRandom:[],
+      positionsAlreadlyTaken:[],
       positions:[],
       IsUp : false,
       randTaupe:0,
       taupes:[],
+      level:1,
+      probaPile:0.6,
+      difficultyTaupeCasque:null,
+      MoleJustKilled:[],
+      taupesKilledCount:0,
     }
   },
   created(){
+    //rempli un tableau de toutes les coordonnées possibles sur le terrain
+    this.positions=[];
     for(let i = 0; i<4;i++){
       for(let j = 0; j< 4;j++){
         this.positions.push([i*25, j*25])
       }
     }
-    this.PutMolesInBeginning();
+    // console.log(this.positions)
+    this.nbHoles = this.GetNumbersOfMolesByLevel(this.level)
+    console.log("nb de trous à création du jeu", this.nbHoles)
+    for(let i =0; i<this.nbHoles;i++){
+      this.PutMolesInBeginning();
+    }
      
   },
   mounted(){
     //this.RandomPosition();
   },
   methods:{
-    myFunction: function () {
+    MoleAppearition:function(){
+      let test = 0
+      let tableauIndexTaupes=[];
       this.taupes = document.getElementsByClassName('mole');
-      // console.log(taupes.length)
-      var /*min = 5, max = 10,*/ alpha = 1;
+      // création d'un tableau double ["one", 1], ["two", 2]....
+      for(let i =0;i<this.taupes.length;i++){
+        tableauIndexTaupes.push({"class":this.numHoleArray[i], "id":i+1})
+      }
+      // console.log(tableauIndexTaupes)
+      //on vérifie que MoleJustKilled n'est pas vide et qu'elle existe bien dans le tableau des taupes sur le terrain
+      // si elle existe, on la retire du tableau pour éviter qu'elle soit rappeler par le random trop vite
+      console.log(tableauIndexTaupes.findIndex(element => { return element.class == this.MoleJustKilled[0]}))
+      if(this.MoleJustKilled.length==0 && tableauIndexTaupes.findIndex(element => { return element.class == this.MoleJustKilled[0]}) != -1){
+        tableauIndexTaupes.splice(tableauIndexTaupes.findIndex(element => { return element.class == this.MoleJustKilled[0]}), 1)
+      } 
+      // console.log(tableauIndexTaupes)
+      this.randTaupe = Math.floor(
+          Math.random() *
+          (this.taupes.length));  // Generate Random number between 0 et numbers of moles
+          // console.log("Randtaupe avant vérif ", this.randTaupe)
+      while(tableauIndexTaupes.includes(this.randTaupe) == false && test<20 && this.MoleJustKilled.length == 0){
+        test++
+        // console.log("verif")
+        this.randTaupe = Math.floor(Math.random() *(this.taupes.length));
+      }
+      if(test == 20)console.log("test", test)
+      test=0
+      // console.log("RandTaupe après vérif", this.randTaupe)
+      // utilise la loi Exponentielle pour déterminer le temps d'apparition des taupes
+      let alpha = 1;
+      var randTime = Math.floor(
+          -alpha * Math.log(1-Math.random())); 
+
+      document.querySelectorAll('.appear').forEach(function(element){
+          element.classList.remove('appear')
+      })
+
+      let HasCasque = this.IsThisMoleHasCasque(this.difficultyTaupeCasque)
+      if(HasCasque){
+        document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .casque").classList.add('appear');
+      }
+      // fait apparaître la taupe avec la classe appear
+      document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .taupe").classList.add('appear');
+      this.timer = setTimeout(this.MoleAppearition, randTime * 2000);
+
+    },
+    RegisterTaupeJustKilled:function(taupekilled){
+      console.log("La taupe ", taupekilled, " est rentrée dans le tableau justKilled")
+      if(this.MoleJustKilled.includes(taupekilled)==false){
+        this.MoleJustKilled.push(taupekilled)
+        
+      }
+      this.taupesKilledCount++
+    },
+    EmptyTaupeJustKilled:function(){
+      if(this.MoleJustKilled != []){
+        
+        this.MoleJustKilled.shift()
+        console.log("empty tableau taupe killed ", this.MoleJustKilled.length)
+        this.timerEmptyArray = setTimeout(this.EmptyTaupeJustKilled, 3000)
+      }
+    },
+    myFunction: function () {
+      //récupère toutes les taupes placées sur le terrain
+      this.taupes = document.getElementsByClassName('mole');
+
+      let alpha = 1;
       
       this.randTaupe = Math.floor(
           Math.random() *
           (this.taupes.length));  // Generate Random number between 0 et numbers of moles
-      // var randTime = Math.floor(
-      //     Math.random() * (max - min + 1) +
-      //     min);  // Generate Random number between 5 - 10
         
+      // utilise la loi Exponentielle pour déterminer le temps d'apparition des taupes
       var randTime = Math.floor(
           -alpha * Math.log(1-Math.random())); 
-      // console.log(
-      //     'Wait for ' + randTime + ' seconds and the mole selected is at index
-      //     ' + randTaupe);
 
-      // for (let i = 0; i < taupes.length; i++) {
       // console.log(document.querySelector(".one .taupe"))
       // console.log(document.querySelector("."+taupes[randTaupe].classList[1] +" .taupe"))
+      let HasCasque = this.IsThisMoleHasCasque(this.difficultyTaupeCasque)
+      if(HasCasque){
+        document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .casque").classList.add('appear');
+      }
+      // fait apparaître la taupe avec la classe appear
       document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .taupe").classList.add('appear');
-      // };
-      // let up = 0.5;
-      // if(!this.IsUp){
-      //   up = 1;
-      // }
       this.timer = setTimeout(this.myFunctionRemove, randTime * 2000);
-      // this.stopTimer = setTimeout(this.StopMole, 5000)
+      
     },
     myFunctionRemove: function () {
-      // this.taupes = document.getElementsByClassName('mole');
-      // console.log(taupes.length)
-      var /*min = 5, max = 10,*/ alpha = 0.5;
-      
-      // this.randTaupe = Math.floor(
-      //     Math.random() *
-      //     (this.taupes.length));  // Generate Random number between 0 et numbers of moles
-      // var randTime = Math.floor(
-      //     Math.random() * (max - min + 1) +
-      //     min);  // Generate Random number between 5 - 10
-        
+
+      let alpha = 0.8;        
       var randTime = Math.floor(
           -alpha * Math.log(1-Math.random())); 
-      // console.log(
-      //     'Wait for ' + randTime + ' seconds and the mole selected is at index
-      //     ' + randTaupe);
-
-      // for (let i = 0; i < taupes.length; i++) {
-      // console.log(document.querySelector(".one .taupe"))
-      // console.log(document.querySelector("."+taupes[randTaupe].classList[1] +" .taupe"))
+ 
       document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .taupe").classList.remove('appear');
-      // };
+      document.querySelector("."+this.taupes[this.randTaupe].classList[0]+"."+this.taupes[this.randTaupe].classList[1] +" .casque").classList.remove('appear');
     
       this.stopTimer = setTimeout(this.myFunction, randTime * 4000);
-      // this.stopTimer = setTimeout(this.StopMole, 5000)
     },
   //   KillTheMole : function(element) {
   //   //   console.log(element)
@@ -117,47 +194,170 @@ export default {
     },
     PlayGame: function(){
       console.log("Play from App.vue")
-      this.myFunction()
+      // this.myFunction()
+      this.MoleAppearition()
+      this.EmptyTaupeJustKilled()
     },
     StopGame : function() {
       console.log("Enter in StopGame from App.vue")
       clearTimeout(this.timer)
-      clearTimeout(this.stopTimer)
+      clearTimeout(this.timerEmptyArray)
+      // clearTimeout(this.stopTimer)
     },
     RestartGame: function() {
-      console.log("Enter in RestartGame from App.vue")
+      // console.log("Enter in RestartGame from App.vue")
       // this.myFunction();
-      this.nbHoles = 1;
+      //this.nbHoles = 1;
+      if(this.level <=5){this.level++}
     },
     AddMole : function(){
       console.log("Enter in AddMole from App.vue");
-      if(this.nbHoles < this.limitHoles){
-        this.nbHoles++;
-        this.GetRandomPosition();
-        console.log("nbHoles : "+ this.nbHoles);
-      }
-    },
-    shuffle: function(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-    },
-    range: function(start, end) {
-      /* generate a range : [start, start+1, ..., end-1, end] */
-      var len = end - start + 1;
-      var a = new Array(len);
-      for (let i = 0; i < len; i++) a[i] = start + i;
-      return a;
+      // if(this.nbHoles < this.limitHoles){
+      //   this.nbHoles++;
+      //   this.GetRandomPosition();
+      //   console.log("nbHoles : "+ this.nbHoles);
+      // }
+      this.SetTerrain(true)
     },
     PutMolesInBeginning: function(){
-      for(let i = 0; i < this.nbHoles;i=i+1){
-        let random = Math.floor(Math.random() * this.positions.length);
-        this.positionRandom[i] = this.positions[random]; //{"top":this.position[random],"left":position[random]};
-        this.positions.splice(random, 1);
-        console.log("nb elements positions = ", this.positions.length)
+      let tab_proba = [
+        0.1, 0.4, 0.3, 0.2,
+        0.2, 0.3, 0.4, 0.1,
+        0.3, 0.2, 0.2, 0.3,
+        0.4, 0.1, 0.1, 0.4
+      ]
+      let found = -1;
+      let sum = 0;
+      let random;
+      // console.log("random", random)
+      let i = 0, j;
+      let test = 0
+      while(found != undefined && test<10){
+        test++
+        // console.log("entrer dans la boucle while car found != undefined")
+          i = 0;
+          random = Math.random();
+        // console.log("random ligne", random)
+          sum = tab_proba[i]
+          while(sum < random){ //while(sum < random && random < tab_proba[i]){
+            i++
+            sum += tab_proba[i]
+          }
+        // console.log("sum of ligne", sum)
+        // console.log("i", i)
+          // for(let i=0; i< 4;i++){
+          //   if(sum > random && random > tab_proba[i]){
+          //     console.log("x",i)
+          //     x=i
+          //   }
+          // }
+          
+          j=i;
+          sum = tab_proba[j]
+          random = Math.random();
+        // console.log("random colonne ", random)
+          while(sum < random){
+            j+=4
+            sum+=tab_proba[j]
+          }
+          
+          found = this.positionsAlreadlyTaken.find(element => element==this.positions[j])
+          if(found == undefined){console.log("c'est bon tu vas bientot sortir normalement")}
+          // if(found == undefined){
+          //   this.positionsAlreadlyTaken.push(this.positions[j])
+          // }
+          
+          // let probaARedistribuee = tab_proba[j]
+          //     tab_proba[j] = 0
+          //     while(probaARedistribuee >=0){
+          //       let randomPosition = Math.floor(Math.random() * tab_proba.length);
+          //       if(randomPosition != j){
+          //         tab_proba[randomPosition] += 0.1
+          //         probaARedistribuee-=0.1
+          //       }
+          //     }
       }
+      // console.log("test", test)
+      this.positionRandom.push(this.positions[j])
+      this.positionsAlreadlyTaken.push(this.positions[j])
+      // for(let j=i;j<tab_proba.length;j+=4){
+      //   if(sum > random && random > tab_proba[i]){
+      //     console.log("tab_roba["+j+"]", tab_proba[j])
+      //   }
+      //     // this.positionRandom.push(this.positions[i])
+      //     probaARedistribuee = this.tab_proba[i]
+      //     this.tab_proba[i] = 0
+      //     while(this.probaARedistribuee >0){
+      //       let randomPosition = Math.floor(Math.random() * this.tab_proba.length);
+      //       if(randomPosition != i){
+      //         this.tab_proba[randomPosition] += 0.1
+      //         this.probaARedistribuee-=0.1
+      //       }
+      //     }
+      // }
+        // console.log(tab_proba)
+      
+      // for(let i = 0; i < this.nbHoles;i=i+1){
+      //   let random = Math.floor(Math.random() * this.positions.length);
+      //   this.positionRandom[i] = this.positions[random]; //{"top":this.position[random],"left":position[random]};
+      //   this.positions.splice(random, 1);
+      //   console.log("nb elements positions = ", this.positions.length)
+      // }
       console.log(this.positionRandom);
+    },
+    // 1) tirage d'une piece pile ou face de parametre de probabilité de pile =p
+    pileOuFace:function(p) { //Bernouilli
+      //p = 0.5 // juste pour tester, peut-être à changer selon conditions
+      let random = Math.random(); // ramene sur 1
+      if (random < p) {
+        console.log("pile");
+        return -1
+      } else {
+        console.log("face");
+        return 1
+      }
+    },
+    GetNumbersOfMolesByLevel: function(level, p=0.6){
+      console.log("LEVEL =", level)
+      for(let i = 0; i<=level;i++){
+        if(this.pileOuFace(p)==-1){ // si le tirage sort pile 
+          return i+1 //retourne le nombre de trous qu'il y aura sur le terrain
+        }
+      }
+      return level+2 //s'il n'y a pas de pile tiré alors il y aura le maximum de trous pour le niveau
+    },
+    SetTerrain:function(test=false){
+      if(!test)this.probaPile-=0.1
+      this.nbHoles = this.GetNumbersOfMolesByLevel(this.level, this.probaPile)
+      console.log("nb de trous nouveau level", this.nbHoles)
+      this.positionRandom=[]
+      this.positionsAlreadlyTaken=[]
+      for(let i =0; i<this.nbHoles;i++){
+        this.PutMolesInBeginning();
+      }
+    },
+    IsThisMoleHasCasque:function(difficulty){
+      if(difficulty != null){
+        let difficultiesWithProbability = [["0", 0.2],["1",0.5],["2",0.8]]
+        if(this.pileOuFace(difficultiesWithProbability[difficulty][1]) == -1){
+          return true;
+        }else return false
+      }
+    },
+    GetFromUserLevelDifficulty:function(){
+      let casqueDifficulty = prompt("Please enter difficulty level for traps (0 => facile, 1=>moyen, 2=>difficile", "0");
+      if (["0", "1", "2"].includes(casqueDifficulty)) {
+        return parseInt(casqueDifficulty)
+      }else{
+        return 0
+      }
+    },
+    ReachNumberOfTaupe:function(level, taupesKilled){
+      if(taupesKilled >= this.objectivesByLevels[level]){
+        alert("Bravo, tu as completé le niveau avec succès. On passe au suivant maintenant !")
+        this.level++
+        this.taupesKilledCount=0
+      }
     },
     GetRandomPosition : function(){
       
@@ -169,55 +369,6 @@ export default {
       // }
       console.log(this.positionRandom);
     },
-    // GetRandomPosition: function(){
-    //   let moleSize=290, moleCount = this.nbHoles;
-    //   let gRows = Math.floor(936/moleSize);
-    //   let gCols = Math.floor(678/moleSize)
-
-    //   //let vals =[];
-    //   let vals = this.range(1,moleCount)
-    //   let xpos = this.range(0,gRows)
-    //   let ypos = this.range(0,gCols)
-
-    //   let possibilities = [];
-    //   let counter = 0;
-    //   for(let i=0; i< xpos.length;i++){
-    //     for(let j=0; j< ypos.length;j++){
-    //       possibilities[counter]=[ypos[j]*25,xpos[i]*25]
-    //       counter++
-    //     }
-    //   }
-    //   // console.log(vals)
-    //   // console.log(xpos)
-    //   this.shuffle(vals)
-    //   this.shuffle(xpos)
-    //   this.shuffle(ypos)
-    //   // let ypos = this.shuffle([...Array(gCols).keys()])
-    //   console.log(vals)
-    //   console.log(xpos)
-    //   console.log(ypos)
-    //   let temp = []
-    //   for(let i = 0; i < vals.length;i=i+1){
-    //      temp[0] = [ypos[i%ypos.length]*25,xpos[i%xpos.length]*25];
-    //      //console.log(JSON.stringify([50,75])==JSON.stringify([50,75]));
-
-    //     let found = this.positionRandom.findIndex(element => JSON.stringify(element) == JSON.stringify(temp[0]));
-    //     console.log(found)
-    //     let count = 0;
-    //     while(found > -1){
-    //       count++
-    //       console.log("entries " + temp[0] + " already in positionRandom ")
-    //       temp[0] = [ypos[(i+count)%ypos.length]*25,xpos[i%xpos.length]*25];
-    //       found = this.positionRandom.findIndex(element => JSON.stringify(element) == JSON.stringify(temp[0]));
-    //       console.log("found in the while : " + found)
-    //     }
-    //     this.positionRandom[i] = temp[0]
-    //   }
-    
-    //   console.log(this.positionRandom[0][0])
-    //   // console.log([this.position[0].top, this.position[0].left])
-    //   // return {"top":this.position[0].top, "left":this.position[0].left}
-    // },  
   }
 }
 </script>
@@ -238,6 +389,7 @@ html, body{
   align-items: center;
   justify-content: space-around;
   height:100%;
+  background: url('./assets/background.jpg');
 }
 
 .appear{
@@ -247,7 +399,7 @@ html, body{
 
 .dizzy{
     /* background:center / no-repeat url('./img/taupe.png'), top / no-repeat url('./img/dizzy.gif') !important; */
-    background: url('./assets/dizzy.gif') top no-repeat, url('./assets/taupe_dizzy.png') top no-repeat !important;
+    background: url('./assets/dizzy.gif') top no-repeat, url('./assets/taupe_dizzy_RACCOURCI.png') top no-repeat !important;
     background-size: 50%,auto !important;
 }
 </style>

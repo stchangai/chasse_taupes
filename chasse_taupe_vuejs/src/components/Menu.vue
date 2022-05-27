@@ -2,10 +2,13 @@
   <div id="menu">
     <h2>Chasse taupe</h2>
     <h3>Level {{level}}</h3>
-    <button id="play" v-on:click="PlayGame">PLAY</button>
-    <button id="stop" v-on:click="StopGame">STOP</button>
-    <button id="restart" v-on:click="RestartGame">RESTART</button>
-    <button id="nbHole" v-on:click="AddMole" :disabled="state==false">+ DE TAUPES</button>
+    <div>
+      <button id="play" v-on:click="PlayGame">PLAY</button>
+      <button id="stop" v-on:click="StopGame">STOP</button>
+      <button id="restart" v-on:click="RestartGame" :disabled="state==false">RESTART</button>
+      <button id="nbHole" v-on:click="AddMole">+ DE TAUPES</button>
+    </div>
+    <span>Taupes tapées : {{taupesKilled}}</span>
   </div>
 </template>
 
@@ -13,11 +16,12 @@
 export default {
   name: 'Menu',
   props: {
-    level: String,
+    level: Number,
     stop:Boolean,
     restart:Boolean,
     nbHoles:Number,
-    state:Boolean
+    state:Boolean,
+    taupesKilled:Number,
   },
   mounted(){
     
@@ -49,5 +53,12 @@ export default {
 #menu{
     height:70vh;
     width:25vw;
+    display:flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left:4vw;
+}
+span{
+  margin:3vh 0;
 }
 </style>

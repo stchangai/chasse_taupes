@@ -1,6 +1,6 @@
 <template>
   <div id="game" >
-    <Mole v-for="index in nbHoles" :key="index" :numHole="index" :position="position[index-1]" />
+    <Mole v-for="index in nbHoles" :key="index" :numHole="index" :position="position[index-1]" v-on:TaupeKilled="SendTaupeJustKilled"/>
   </div>
 </template>
 
@@ -12,7 +12,7 @@ export default {
     Mole
   },
   props: {
-    level: String,
+    level: Number,
     nbHoles:Number,
     position:Array
   },
@@ -21,7 +21,7 @@ export default {
       top:0,
       left:0,
       positionRandom:[{"top":0, "left":0}],
-      positions:[]
+      positions:[],
     }
   },
   mounted(){
@@ -36,6 +36,9 @@ export default {
     console.log("position = ", this.position)
   },
   methods:{
+    SendTaupeJustKilled: function(taupekilled){
+      this.$emit("TaupeJustKilled", taupekilled)
+    },
     shuffle: function(array) {
       for (let i = array.length - 1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i + 1));
