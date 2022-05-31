@@ -1,6 +1,6 @@
 <template>
   <div id="game" >
-    <Mole v-for="index in nbHoles" :key="index" :numHole="index" :position="position[index-1]" v-on:TaupeKilled="SendTaupeJustKilled"/>
+    <Mole v-for="index in nbHoles" :key="index" :numHole="index" :position="position[index-1]" v-on:TaupeKilled="SendTaupeJustKilled" v-on:BoosterDeclenche="BoosterDeclenche"/>
   </div>
 </template>
 
@@ -22,12 +22,15 @@ export default {
     }
   },
   updated(){
-    console.log("position = ", this.position)
+    // console.log("position = ", this.position)
   },
   methods:{
     SendTaupeJustKilled: function(taupekilled){
       this.$emit("TaupeJustKilled", taupekilled)
     },
+    BoosterDeclenche:function(){
+      this.$emit("LaunchTheBooster")
+    }
   }
 }
 </script>

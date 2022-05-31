@@ -5,8 +5,8 @@
     <div>
       <button id="play" v-on:click="PlayGame">PLAY</button>
       <button id="stop" v-on:click="StopGame">STOP</button>
-      <button id="restart" v-on:click="RestartGame" :disabled="state==false">RESTART</button>
-      <button id="nbHole" v-on:click="AddMole">+ DE TAUPES</button>
+      <button id="restart" v-on:click="RestartGame" :disabled="state==false">LEVEL ++</button>
+      <button id="nbHole" v-on:click="AddMole">SET TERRAIN</button>
     </div>
     <span>Taupes tapées : {{taupesKilled}}</span>
   </div>

@@ -3,6 +3,7 @@
       <div></div>
       <div class="taupe"></div>
       <div class="casque"></div>
+      <div class="timer"></div>
       <div class="kill"></div>
   </div>
 </template>
@@ -22,45 +23,44 @@ export default {
     }
   },
   updated(){
-    console.log("position = ", this.position)
+    // console.log("position = ", this.position)
   },
   methods:{
     DizzyTaupe : function() {
-      console.log('Dizzy taupe is ovver')
-      document.querySelector('.' + this.classeParent + ' .taupe').classList.remove('dizzy');
+      // console.log('Dizzy taupe is ovver')
+      if(document.querySelector('.' + this.classeParent + ' .taupe') != null)document.querySelector('.' + this.classeParent + ' .taupe').classList.remove('dizzy');
       // document.querySelector('.' + this.classeParent+ ' .taupe').classList.remove('appear');
     },
     KillTheMole: function(event) {
-      const classOfCasque = event.target.previousSibling.className.split(' ');
+      const classOfCasque = event.target.previousSibling.previousSibling.className.split(' ');
       if(classOfCasque.includes('appear')==false){
         // console.log(event.target.previousSibling)
         //   console.log('you killed the mole ' + element.className);
-        const classOfTaupe = event.target.previousSibling.previousSibling.className.split(' ');
-        //console.log("classOfTaupe", classOfTaupe)
+
         const TheParentNode = event.target.parentNode.className.split(' ');
-        this.word = classOfTaupe[0];
-        // console.log(this.word)
+
         this.classeParent = TheParentNode[1]
         // console.log(TheParentNode)
         // console.log('.' + TheParentNode[1] + ' .taupe.appear')
         let moleToKill = document.querySelector('.' + TheParentNode[1] + ' .taupe.appear');
+        let IsThisaSpecialeTaupe = document.querySelector('.' + TheParentNode[1] + ' .timer.appearTimer')
         if (moleToKill != null) {
           moleToKill.classList.add('dizzy');
+          if(IsThisaSpecialeTaupe!=null)this.$emit("BoosterDeclenche")
           this.$emit("TaupeKilled", TheParentNode[1])
           document.querySelector('.' + TheParentNode[1]+ ' .taupe').classList.remove('appear');
+          document.querySelector('.' + TheParentNode[1]+ ' .timer').classList.remove('appearTimer');
           setTimeout(this.DizzyTaupe, 500);
         }
       }else{
-        console.log("cest une taupe casquée, il faut cliquer 2 fois")
+        // console.log("cest une taupe casquée, il faut cliquer 2 fois")
       }
     },
     KillTheMoleCasquee: function(event) {
-      const classOfCasque = event.target.previousSibling.className.split(' ');
+      const classOfCasque = event.target.previousSibling.previousSibling.className.split(' ');
       if(classOfCasque.includes('appear')==true){
         
-        const classOfTaupe = event.target.previousSibling.className.split(' ');
         const TheParentNode = event.target.parentNode.className.split(' ');
-        this.word = classOfTaupe[0];
         // console.log(this.word)
         this.classeParent = TheParentNode[1]
         // console.log(TheParentNode)
@@ -69,12 +69,13 @@ export default {
         if (moleToKill != null) {
           moleToKill.classList.add('dizzy');
           this.$emit("TaupeKilled", TheParentNode[1])
-          document.querySelector('.' + TheParentNode[1]+ ' .taupe').classList.remove('appear');
           document.querySelector('.' + TheParentNode[1]+ ' .casque').classList.remove('appear');
+          document.querySelector('.' + TheParentNode[1]+ ' .taupe').classList.remove('appear');
+          
           setTimeout(this.DizzyTaupe, 500);
         }
       }else{
-        console.log("cest une taupe normale, pas besoin de double cliquer")
+        // console.log("cest une taupe normale, pas besoin de double cliquer")
       }
     },
   
@@ -120,13 +121,20 @@ export default {
 }
 
 .mole div:nth-child(3){
-    background:url('../assets/casque_taupe.png') no-repeat;
+    background:url('../assets/casque_taupe_RACCOURCI.png') no-repeat;
     background-position:bottom;
     /* background-position:51% -7%; */
     background-size:50%;
 }
 
 .mole div:nth-child(4){
+    background:url('../assets/timer.png') no-repeat;
+    background-position:bottom left;
+    /* background-position:51% -7%; */
+    background-size:32%;
+}
+
+.mole div:nth-child(5){
     background:url('../assets/trou_avant_RACCOURCI.png') no-repeat;
     background-position:bottom;
 }
@@ -135,4 +143,5 @@ export default {
     background-position:center top !important;
     
 }
+
 </style>
